@@ -35,17 +35,18 @@ class WithdrawalController extends Controller
             return redirect()->route('withdraw');
         }
 
-        // Initiate Paypal Payment
+        // Initiate Paypal Payment Credentials
         $username = env('PAYPAL_CLIENT_ID');
         $password = env('PAYPAL_CLIENT_SECRET');
         $url = env('PAYPAL_SANDBOX_URL') . '/v1/oauth2/token';
-        
+
+        // Get Access Token
         $response = Http::asForm()->withBasicAuth($username, $password)->post($url, [
             'grant_type'=> 'client_credentials',
         ]);
 
         if($response->failed()) {
-            $request->session()->flash('danger', 'Sorry, Something went wrong with Paypal');
+            $request->session()->flash('danger', 'Sorry, Something went wrong with Paypal Initiation');
             return redirect()->route('withdraw');
         }
 
@@ -73,16 +74,17 @@ class WithdrawalController extends Controller
 
         $url = env('PAYPAL_SANDBOX_URL') . '/v1/payments/payouts';
 
+        // initiate Paypal Payout
         $response = Http::withToken($access_token)->post($url, $payload);
 
         if($response->failed()) {
             $request->session()->flash('danger', 'Sorry, Something went wrong with Paypal Payout Initiation');
             return redirect()->route('withdraw');
         }
-        
+
         // dd($response->json());
         /*
-            Initiation was successful
+            Paypal Payout Initiation was successful getting here
         */
 
         // Deduct User's balance
