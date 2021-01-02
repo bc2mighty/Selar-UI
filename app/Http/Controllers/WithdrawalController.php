@@ -4,14 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Withdrawal;
+use App\Notifications\PaymentNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 
 class WithdrawalController extends Controller
 {
     public function withdrawals(Request $request) {
-        $withdrawals = Withdrawal::where('user_id', session('user_id'))->paginate(20);
+        $withdrawals = Withdrawal::where('user_id', session('user_id'))->orderBy('created_at', 'desc')->paginate(20);
         return view('withdrawals')->with(['withdrawals' => $withdrawals]);
     }
     
@@ -87,6 +90,10 @@ class WithdrawalController extends Controller
             Paypal Payout Initiation was successful getting here
         */
 
+        // Send Slack Notification
+        Notification::route('slack', env('SLACK_HOOK'))
+            ->notify(new PaymentNotification($request->amount, $user->name));
+
         // Deduct User's balance
         $balance -= $request->amount;
 
@@ -104,7 +111,6 @@ class WithdrawalController extends Controller
         $request->currency == "usd" ? $user->balance_usd = $balance : $user->balance_ngn = $balance;
         $user->save();
 
-        // Send Slack Notification
         
         $request->session()->flash('success', "Successfully Withdrew $request->amount from your $request->currency balance");
         return redirect()->route('withdrawals');
