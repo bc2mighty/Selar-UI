@@ -8,7 +8,19 @@
             @include('layouts/sidebar')
         </div>
         <div class="col-span-2 shadow-xl p-4 box-border">
-            <h3 class="font-medium pl-7">Welcome, User</h3>
+            <h3 class="font-medium pl-7">Welcome, User</h3>    
+            
+            @if (session('success'))
+                <div class="text-green-500 text-center">
+                    {{ session('success') }}
+                </div>
+            @endif
+            @if (session('danger'))
+                <div class="text-red-500 text-center">
+                    {{ session('danger') }}
+                </div>
+            @endif
+            
             <div class="h-36 rounded-md w-full">
                 <div class="grid grid-cols-2 gap-4">
                     <div class="col-span-1">
@@ -17,7 +29,7 @@
                                 <img class="h-12 w-12" src="{{ asset('/images/naira.png') }}" alt="Naira Logo">
                             </div>
                             <div>
-                                <div class="text-xl font-medium text-black">50.00</div>
+                                <div class="text-xl font-medium text-black">@naira($user->balance_ngn)</div>
                                 <p class="text-gray-500">Available Balance</p>
                             </div>
                         </div>
@@ -28,7 +40,7 @@
                                 <img class="h-12 w-12" src="{{ asset('/images/coin.png') }}" alt="Naira Logo">
                             </div>
                             <div>
-                                <div class="text-xl font-medium text-black">50.00</div>
+                                <div class="text-xl font-medium text-black">@dollar($user->balance_usd)</div>
                                 <p class="text-gray-500">Available Balance</p>
                             </div>
                         </div>

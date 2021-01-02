@@ -1,5 +1,10 @@
 <?php
 
+use App\Http\Controllers\IndexController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\WithdrawalController;
+use App\Http\Middleware\UserSignedIn;
+use App\Http\Middleware\UserSignedOut;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,22 +18,19 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('index');
-})->name('homepage');
-
-Route::get('/login', function () {
-    return view('login');
-})->name('login');
-
-Route::get('/register', function () {
-    return view('register');
-})->name('register');
-
-Route::get('/withdrawals', function () {
-    return view('withdrawal');
-})->name('withdrawals');
-
-Route::get('/withdraw', function () {
-    return view('withdraw');
-})->name('withdraw');
+Route::group(['prefix' => ''], function() {
+    Route::middleware([UserSignedIn::class])->group(function () {
+        Route::get('/login', [UserController::class, 'login'])->name('login');
+        Route::get('/register', [UserController::class, 'register'])->name('register');
+        Route::post('/login', [UserController::class, 'login_user'])->name('login_user');
+        Route::post('/register', [UserController::class, 'register_user'])->name('register_user');
+    });
+    
+    Route::middleware([UserSignedOut::class])->group(function () {
+        Route::get('/', [UserController::class, 'dashboard'])->name('dashboard');
+        Route::get('/logout', [UserController::class, 'logout'])->name('logout');
+        Route::get('/withdrawals', [WithdrawalController::class, 'withdrawals'])->name('withdrawals');
+        Route::get('/withdraw', [WithdrawalController::class, 'withdraw'])->name('withdraw');
+        Route::post('/withdraw', [WithdrawalController::class, 'withdraw_money'])->name('withdraw_money');
+    }); 
+});
